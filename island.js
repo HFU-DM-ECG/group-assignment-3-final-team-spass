@@ -62,6 +62,7 @@ const island1 = new THREE.Object3D();
 const island2 = new THREE.Object3D();
 const island3 = new THREE.Object3D();
 const airship = new THREE.Object3D();
+const checkpoints = new THREE.Object3D();
 const loader = new GLTFLoader();
 
 // orbit Controls
@@ -110,6 +111,56 @@ loader.load('models/airship.glb', function (gltf) {
 }, undefined, function (error) {
     console.error(error);
 });
+
+loader.load('models/checkpoint.glb', function (gltf) {
+    let checkpoint = gltf.scene;
+    for (let i = 0; i < 17; i++) {
+        let checkpointCopy = checkpoint.clone();
+        checkpoints.children.push(checkpointCopy);
+    }
+    checkpoints.name = "checkpoints";
+    collection.add(checkpoints);
+    placeCheckpoints();
+    console.log(checkpoints);
+    console.log(collection);
+});
+
+// place checkpoints
+function placeCheckpoints() {
+    checkpoints.children[0].position.set(3, 1, -3.5);
+    checkpoints.children[1].position.set(6, 1, -4);
+    checkpoints.children[1].rotateY(0.5);
+    checkpoints.children[2].position.set(9, 1, -7);
+    checkpoints.children[2].rotateY(1);
+    checkpoints.children[3].position.set(11, 1, -11);
+    checkpoints.children[3].rotateY(1.7);
+    checkpoints.children[4].position.set(10, 1, -15);
+    checkpoints.children[4].rotateY(2.2);
+    checkpoints.children[5].position.set(6, 1, -17);
+    checkpoints.children[5].rotateY(3.1);
+    checkpoints.children[6].position.set(2, 1, -16);
+    checkpoints.children[6].rotateY(3.6);
+    checkpoints.children[7].position.set(-2, 1, -13);
+    checkpoints.children[7].rotateY(4);
+    checkpoints.children[8].position.set(-6.5, 1, -11);
+    checkpoints.children[8].rotateY(3.5);
+    checkpoints.children[9].position.set(-11, 1, -12);
+    checkpoints.children[9].rotateY(3);
+    checkpoints.children[10].position.set(-16, 1, -13);
+    checkpoints.children[10].rotateY(3.5);
+    checkpoints.children[11].position.set(-20, 1, -10);
+    checkpoints.children[11].rotateY(4);
+    checkpoints.children[12].position.set(-22, 1, -5);
+    checkpoints.children[12].rotateY(4.5);
+    checkpoints.children[13].position.set(-20, 1, 1);
+    checkpoints.children[13].rotateY(5.4);
+    checkpoints.children[14].position.set(-15, 1, 3);
+    checkpoints.children[14].rotateY(6.1);
+    checkpoints.children[15].position.set(-10, 1, 3);
+    checkpoints.children[15].rotateY(6.3);
+    checkpoints.children[16].position.set(-6, 1, 2);
+    checkpoints.children[16].rotateY(0);
+}
 
 // object floating up and down
 function floating(object, floatingFrequency, amplitude, currentTime) {
