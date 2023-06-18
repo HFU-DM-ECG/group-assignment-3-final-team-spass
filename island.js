@@ -119,33 +119,36 @@ loader.load('models/airship.glb', function (gltf) {
 });
 
 class CheckBox {
-    constructor(position, rotation, width, height, depth) {
+    constructor(position, rotation, width, height, depth, passed = false) {
         this.position = position;
         this.rotation = rotation;
         this.width = width;
         this.height = height;
         this.depth = depth;
+        this.passed = passed;
     }
 }
 
-const CheckBoxList = [];
+const checkBoxList = [];
 let passedCheckpoints = 0;
 
-function registerCheckBox(position, rotation, width, height, depth) {
-    let newCheckpoint = new CheckBox(position, rotation, width, height, depth);
-    CheckBoxList.push(newCheckpoint);
+function registerCheckBox(position, rotation, width, height, depth, passed) {
+    let newCheckpoint = new CheckBox(position, rotation, width, height, depth, passed);
+    checkBoxList.push(newCheckpoint);
     const geometry = new THREE.PlaneGeometry(width, height);
     const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
     const plane = new THREE.Mesh(geometry, material);
     collection.add(plane);
-    console.log(CheckBoxList);
+    // console.log(CheckBoxList);
     plane.position.set(position.x, position.y+0.5, position.z);
     plane.applyQuaternion(rotation);
 }
 
+const numberOfCheckpoints = 17;
+
 loader.load('models/checkpoint.glb', function (gltf) {
     let checkpoint = gltf.scene;
-    for (let i = 0; i < 17; i++) {
+    for (let i = 0; i < numberOfCheckpoints; i++) {
         let checkpointCopy = checkpoint.clone();
         checkpointCopy.scale.set(1.5,1.5,1.5);
         checkpoints.children.push(checkpointCopy);
@@ -254,7 +257,7 @@ function moveAirship() {
 }
 
 function checkCheckBox(index) {
-    let checkBox = CheckBoxList[index];
+    let checkBox = checkBoxList[index];
     let point1 = new THREE.Vector3(checkBox.position.x + checkBox.width / 2, checkBox.position.y + checkBox.height / 2, checkBox.position.z + checkBox.depth / 2);
     let point2 = new THREE.Vector3(checkBox.position.x - checkBox.width / 2, checkBox.position.y - checkBox.height / 2, checkBox.position.z - checkBox.depth / 2);
 
@@ -266,22 +269,38 @@ function checkCheckBox(index) {
 }
 
 function nearCheckBox(distance) { // Only check near Checkpoints
-    for (let i = 0; i < CheckBoxList.length; i++) {
-        if (CheckBoxList[i] != null) {
-            if (Math.abs(new THREE.Vector3(CheckBoxList[i].position.x - airship.position.x,
-                                           CheckBoxList[i].position.y - airship.position.y,
-                                           CheckBoxList[i].position.z - airship.position.z).length()) < distance) {
+    for (let i = 0; i < checkBoxList.length; i++) {
+        if (!checkBoxList[i].passed) {
+            if (Math.abs(new THREE.Vector3(checkBoxList[i].position.x - airship.position.x,
+                                           checkBoxList[i].position.y - airship.position.y,
+                                           checkBoxList[i].position.z - airship.position.z).length()) < distance) {
                 if (checkCheckBox(i)) {
-                    if (i == 0) {
+                    // start run
+                    if (!isTimerRunning && i == 0) {
                         startTimer();
                     }
-                    else if (i == CheckBoxList.length - 1 && passedCheckpoints == CheckBoxList.length - 1) {
-                        stopTimer();
-                    }
-                    passedCheckpoints += 1;
-                    console.log("Checkpoint passed!");
-                    console.log("Progress: " + passedCheckpoints + " out of " + CheckBoxList.length);
-                    CheckBoxList[i] = null;
+                    // during run
+                    else if (isTimerRunning) {
+                        // last checkpoint
+                        if (i == checkBoxList.length - 1) {
+                            // check if all previous checkpoints have been passed
+                            if (passedCheckpoints == checkBoxList.length - 1) {
+                                passedCheckpoints += 1;
+                                checkBoxList[i].passed = true;
+                                console.log("Checkpoint passed!");
+                                console.log("Progress: " + passedCheckpoints + " out of " + checkBoxList.length);
+                                console.log("Done! Your time: " + timer.innerHTML); 
+                                stopTimer();
+                            }
+                        }
+                        // all checkpoints but the last
+                        else {
+                            passedCheckpoints += 1;
+                            checkBoxList[i].passed = true;
+                            console.log("Checkpoint passed!");
+                            console.log("Progress: " + passedCheckpoints + " out of " + checkBoxList.length);
+                        }
+                    }                    
                 }
             }
         }
@@ -294,7 +313,7 @@ function startTimer() {
     isTimerRunning = true;
     timerInterval = setInterval(updateCountdown, 1000);
     currentTime = 0;
-    
+        
     function updateCountdown() {
         let minutes = Math.floor(currentTime/60);
         let seconds = (currentTime % 60).toString().padStart(2, '0');
@@ -304,9 +323,13 @@ function startTimer() {
 }
 
 function stopTimer() {
-    if (!isTimerRunning) return;
+
     isTimerRunning = false;
+    checkBoxList.forEach((checkpoint) => {
+        checkpoint.passed = false;
+    });
     clearInterval(timerInterval);
+    passedCheckpoints = 0;
 }
 
 function animate() {
@@ -330,6 +353,5 @@ function animate() {
         renderer.render(scene, camera);
     })
 }
-
 addJoystick();
 animate();
