@@ -290,6 +290,21 @@ function nearCheckBox(distance) { // Only check near Checkpoints
     }
 }
 
+function startTimer() {
+    time = 0;
+
+    countdown = document.getElementById('countdown');
+    
+    setInterval(updateCountdown, 1000);
+    
+    function updateCountdown() {
+        let minutes = Math.floor(time/60);
+        let seconds = time % 60;
+        countdown.innerHTML = `${minutes} : ${seconds}`;
+        time++;
+    }
+}
+
 function animate() {
     renderer.setAnimationLoop(function () {
         // time management
@@ -312,6 +327,6 @@ function animate() {
     })
 }
 
-
+startTimer();
 addJoystick();
 animate();
