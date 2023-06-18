@@ -112,22 +112,53 @@ loader.load('models/airship.glb', function (gltf) {
     console.error(error);
 });
 
+class CheckBox {
+    constructor(position, rotation, width, height, depth) {
+        this.position = position;
+        this.rotation = rotation;
+        this.width = width;
+        this.height = height;
+        this.depth = depth;
+    }
+}
+
+const CheckBoxList = [];
+let passedCheckpoints = 0;
+
+function registerCheckBox(position, rotation, width, height, depth) {
+    let newCheckpoint = new CheckBox(position, rotation, width, height, depth);
+    CheckBoxList.push(newCheckpoint);
+    const geometry = new THREE.PlaneGeometry(width, height);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+    const plane = new THREE.Mesh(geometry, material);
+    collection.add(plane);
+    console.log(CheckBoxList);
+    plane.position.set(position.x, position.y+0.5, position.z);
+    plane.applyQuaternion(rotation);
+}
+
 loader.load('models/checkpoint.glb', function (gltf) {
     let checkpoint = gltf.scene;
     for (let i = 0; i < 17; i++) {
         let checkpointCopy = checkpoint.clone();
+        checkpointCopy.scale.set(1.5,1.5,1.5);
         checkpoints.children.push(checkpointCopy);
+        collection.add(checkpointCopy);
     }
     checkpoints.name = "checkpoints";
-    collection.add(checkpoints);
     placeCheckpoints();
     console.log(checkpoints);
     console.log(collection);
 });
 
+function placeCheckpoint (index,x,y,z,rotation) {
+    checkpoints.children[index].position.set(x, y, z);
+    checkpoints.children[index].rotateY(rotation);
+    registerCheckBox(new THREE.Vector3(x, y, z), checkpoints.children[index].quaternion, 2, 2, 2);
+}
 // place checkpoints
 function placeCheckpoints() {
-    checkpoints.children[0].position.set(3, 1, -3.5);
+    placeCheckpoint(0,3, 3.5, -3.5,0);
     checkpoints.children[1].position.set(6, 1, -4);
     checkpoints.children[1].rotateY(0.5);
     checkpoints.children[2].position.set(9, 1, -7);
@@ -232,39 +263,10 @@ function moveAirship() {
     }
 }
 
-class CheckBox {
-    constructor(position, direction, width, height, depth) {
-        this.position = position;
-        this.direction = direction;
-        this.width = width;
-        this.height = height;
-        this.depth = depth;
-    }
-}
-
-const CheckBoxList = [];
-const CheckedPoints = [];
-let passedCheckpoints = 0;
-
-function registerCheckBox(position, direction, width, height, depth) {
-    let newCheckpoint = new CheckBox(position, direction, width, height, depth);
-    CheckBoxList.push(newCheckpoint);
-    const geometry = new THREE.PlaneGeometry(width, height);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
-    const plane = new THREE.Mesh(geometry, material);
-    collection.add(plane);
-    console.log(CheckBoxList);
-    plane.position.set(position.x, position.y, position.z);
-    //plane.quaternion.set(direction);
-}
-
-//register all Checkpoints:
-registerCheckBox(new THREE.Vector3(0, 3.5, -3), new THREE.Quaternion(), 2, 2, 1);
-
 function checkCheckBox(index) {
     let checkBox = CheckBoxList[index];
-    let point1 = new THREE.Vector3(checkBox.position.x + checkBox.width / 2, checkBox.position.y + checkBox.height / 2, checkBox.position.z + checkBox.depth / 2).applyQuaternion(checkBox.direction);
-    let point2 = new THREE.Vector3(checkBox.position.x - checkBox.width / 2, checkBox.position.y - checkBox.height / 2, checkBox.position.z - checkBox.depth / 2).applyQuaternion(checkBox.direction);
+    let point1 = new THREE.Vector3(checkBox.position.x + checkBox.width / 2, checkBox.position.y + checkBox.height / 2, checkBox.position.z + checkBox.depth / 2);
+    let point2 = new THREE.Vector3(checkBox.position.x - checkBox.width / 2, checkBox.position.y - checkBox.height / 2, checkBox.position.z - checkBox.depth / 2);
 
     let checkX = (airship.position.x > point2.x && airship.position.x < point1.x);
     let checkY = (airship.position.y > point2.y && airship.position.y < point1.y);
