@@ -291,9 +291,9 @@ function nearCheckBox(distance) { // Only check near Checkpoints
 }
 
 function startTimer() {
-    time = 0;
+    let time = 0;
 
-    countdown = document.getElementById('countdown');
+    let countdown = document.getElementById('countdown');
     
     setInterval(updateCountdown, 1000);
     
