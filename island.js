@@ -333,6 +333,7 @@ function stopTimer() {
 }
 
 function animate() {
+    collection.scale.set(0.2, 0.2, 0.2);
     renderer.setAnimationLoop(function () {
         // time management
         /// scaling to seconds
