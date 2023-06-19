@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ECG Excercise 2: Rendering Pipeline</title>
+  <title>ECG Exercise 3: XR-Application</title>
   <style>
     body {
       margin: 0px;
@@ -16,6 +16,16 @@
       height: 100vh;
     }
 
+    button {
+      position: absolute;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
     #joystickWrapper {
       position: fixed;
       left: 80%;
@@ -23,14 +33,15 @@
     }
 
     #timer {
-    position: absolute;
+    position: fixed;
     margin: auto;
     font-family: 'Segoe UI';
-    font-size: 20px;
-    background-color: #fff;
+    font-size: 35px;
+    background-color: transparent;
+    color: white;
     text-align: center;
-    width: 10%;
-    left: 40%;
+    width: 100%;
+    left: 0%;
     padding: 10px;
     
   }
@@ -49,8 +60,11 @@
 </head>
 
 <body>
-  <div id="joystickWrapper"></div>
-  <div id="timer"></div>
+  <div id="overlay">
+    <div id="joystickWrapper">
+      <div id="timer"></div>
+    </div>
+  </div>
 </body>
 <script type="module" src="island.js"></script>
 

@@ -136,7 +136,7 @@ function registerCheckBox(position, rotation, width, height, depth, passed) {
     let newCheckpoint = new CheckBox(position, rotation, width, height, depth, passed);
     checkBoxList.push(newCheckpoint);
     const geometry = new THREE.PlaneGeometry(width, height);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+    const material = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.0 });
     const plane = new THREE.Mesh(geometry, material);
     collection.add(plane);
     // console.log(CheckBoxList);
@@ -202,7 +202,7 @@ function addJoystick() {
         mode: 'static',
         restJoystick: true,
         shape: 'circle',
-        position: { top: '150px', left: '150px' },
+        position: { top: document.height / 2 +'px', left: document.height / 2 + "px" },
         dynamicPage: true,
     }
     joystickManager = nipplejs.create(options);
