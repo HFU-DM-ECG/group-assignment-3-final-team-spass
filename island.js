@@ -288,8 +288,6 @@ function nearCheckBox(distance) { // Only check near Checkpoints
                                 passedCheckpoints += 1;
                                 checkBoxList[i].passed = true;
                                 console.log("Checkpoint passed!");
-                                console.log("Progress: " + passedCheckpoints + " out of " + checkBoxList.length);
-                                console.log("Done! Your time: " + timer.innerHTML); 
                                 stopTimer();
                             }
                         }
@@ -317,7 +315,8 @@ function startTimer() {
     function updateCountdown() {
         let minutes = Math.floor(currentTime/60);
         let seconds = (currentTime % 60).toString().padStart(2, '0');
-        timer.innerHTML = `${minutes} : ${seconds}`;
+        timer.children[0].innerHTML = `${minutes} : ${seconds}`;
+        timer.children[1].innerHTML = `${passedCheckpoints} / ${checkBoxList.length}`;
         currentTime++;
     }
 }
@@ -329,6 +328,7 @@ function stopTimer() {
         checkpoint.passed = false;
     });
     clearInterval(timerInterval);
+    timer.children[1].innerHTML = `${checkBoxList.length} / ${checkBoxList.length}`;
     passedCheckpoints = 0;
 }
 
