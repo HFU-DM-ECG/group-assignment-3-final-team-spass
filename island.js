@@ -118,6 +118,27 @@ loader.load('models/airship.glb', function (gltf) {
     console.error(error);
 });
 
+// airship controls
+function moveAirship() {
+    let tempVector = new THREE.Vector3();
+
+    if (forwardsValue > 0) {
+        tempVector.set(forwardsValue, 0, 0);
+        airship.position.addScaledVector(tempVector.applyQuaternion(airship.quaternion).applyAxisAngle(new THREE.Vector3(0, 1, 0), -90), 1);
+    }
+    if (backwardsValue > 0) {
+        tempVector.set(-backwardsValue, 0, 0);
+        airship.position.addScaledVector(tempVector.applyQuaternion(airship.quaternion).applyAxisAngle(new THREE.Vector3(0, 1, 0), -90), 1);
+    }
+    if (leftValue > 0) {
+        airship.rotateY(leftValue);
+    }
+    if (rightValue > 0) {
+        airship.rotateY(-rightValue);
+    }
+}
+
+// checkpoints
 class CheckBox {
     constructor(position, rotation, width, height, depth, passed = false) {
         this.position = position;
@@ -130,6 +151,7 @@ class CheckBox {
 }
 
 const checkBoxList = [];
+const numberOfCheckpoints = 17;
 let passedCheckpoints = 0;
 
 function registerCheckBox(position, rotation, width, height, depth, passed) {
@@ -139,12 +161,9 @@ function registerCheckBox(position, rotation, width, height, depth, passed) {
     const material = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.0 });
     const plane = new THREE.Mesh(geometry, material);
     collection.add(plane);
-    // console.log(CheckBoxList);
     plane.position.set(position.x, position.y+0.5, position.z);
     plane.applyQuaternion(rotation);
 }
-
-const numberOfCheckpoints = 17;
 
 loader.load('models/checkpoint.glb', function (gltf) {
     let checkpoint = gltf.scene;
@@ -156,8 +175,6 @@ loader.load('models/checkpoint.glb', function (gltf) {
     }
     checkpoints.name = "checkpoints";
     placeCheckpoints();
-    console.log(checkpoints);
-    console.log(collection);
 });
 
 function placeCheckpoint (index, x, y, z, rotation) {
@@ -165,7 +182,7 @@ function placeCheckpoint (index, x, y, z, rotation) {
     checkpoints.children[index].rotateY(rotation);
     registerCheckBox(new THREE.Vector3(x, y, z), checkpoints.children[index].quaternion, 2, 2, 2);
 }
-// place checkpoints
+
 function placeCheckpoints() {
     placeCheckpoint(0, 3, 3.5, -3.5, 0);
     placeCheckpoint(1, 6, 3.5, -4, 0.5);
@@ -186,89 +203,7 @@ function placeCheckpoints() {
     placeCheckpoint(16, -6, 3.5, 2, 0);
 }
 
-// object floating up and down
-function floating(object, floatingFrequency, amplitude, currentTime) {
-    const scalingFactor = 1 / 1000;
-    var midPosition = object.position.y;
-    object.position.y = midPosition + (Math.sin(currentTime * floatingFrequency) * scalingFactor * amplitude);
-}
-
-function addJoystick() {
-    const options = {
-        zone: document.getElementById('joystickWrapper'),
-        size: 200,
-        multitouch: true,
-        maxNumberOfNipples: 2,
-        mode: 'static',
-        restJoystick: true,
-        shape: 'circle',
-        position: { top: document.height / 2 +'px', left: document.height / 2 + "px" },
-        dynamicPage: true,
-    }
-    joystickManager = nipplejs.create(options);
-
-    joystickManager['0'].on('move', function (event, data) {
-
-        // top of joystick should be the y=100, bottom should be y=-100, left x=-100, right x=100
-        const forward = data.instance.frontPosition.y;
-        const turn = data.instance.frontPosition.x
-        if (forward > 0) {
-            forwardsValue = Math.abs(forward) / 2000
-            backwardsValue = 0
-        } else if (forward < 0) {
-            forwardsValue = 0
-            backwardsValue = Math.abs(forward) / 2000
-        }
-
-        if (turn > 0) {
-            leftValue = 0
-            rightValue = Math.abs(turn) / 2000
-        } else if (turn < 0) {
-            leftValue = Math.abs(turn) / 2000
-            rightValue = 0
-        }
-    });
-
-    joystickManager['0'].on('end', function (event) {
-        backwardsValue = 0
-        forwardsValue = 0
-        leftValue = 0
-        rightValue = 0
-    })
-}
-
-function moveAirship() {
-    let tempVector = new THREE.Vector3();
-
-    if (forwardsValue > 0) {
-        tempVector.set(forwardsValue, 0, 0);
-        airship.position.addScaledVector(tempVector.applyQuaternion(airship.quaternion).applyAxisAngle(new THREE.Vector3(0, 1, 0), -90), 1);
-    }
-    if (backwardsValue > 0) {
-        tempVector.set(-backwardsValue, 0, 0);
-        airship.position.addScaledVector(tempVector.applyQuaternion(airship.quaternion).applyAxisAngle(new THREE.Vector3(0, 1, 0), -90), 1);
-    }
-    if (leftValue > 0) {
-        airship.rotateY(leftValue);
-    }
-    if (rightValue > 0) {
-        airship.rotateY(-rightValue);
-    }
-}
-
-function checkCheckBox(index) {
-    let checkBox = checkBoxList[index];
-    let point1 = new THREE.Vector3(checkBox.position.x + checkBox.width / 2, checkBox.position.y + checkBox.height / 2, checkBox.position.z + checkBox.depth / 2);
-    let point2 = new THREE.Vector3(checkBox.position.x - checkBox.width / 2, checkBox.position.y - checkBox.height / 2, checkBox.position.z - checkBox.depth / 2);
-
-    let checkX = (airship.position.x > point2.x && airship.position.x < point1.x);
-    let checkY = (airship.position.y > point2.y && airship.position.y < point1.y);
-    let checkZ = (airship.position.z > point2.z && airship.position.z < point1.z);
-
-    return checkX && checkY && checkZ;
-}
-
-function nearCheckBox(distance) { // Only check near Checkpoints
+function nearCheckBox(distance) { // Only called when near a checkpoint
     for (let i = 0; i < checkBoxList.length; i++) {
         if (!checkBoxList[i].passed) {
             if (Math.abs(new THREE.Vector3(checkBoxList[i].position.x - airship.position.x,
@@ -305,6 +240,73 @@ function nearCheckBox(distance) { // Only check near Checkpoints
     }
 }
 
+function checkCheckBox(index) { // returns true if center of airship is inside the hitbox
+    let checkBox = checkBoxList[index];
+    let point1 = new THREE.Vector3(checkBox.position.x + checkBox.width / 2, 
+                                   checkBox.position.y + checkBox.height / 2, 
+                                   checkBox.position.z + checkBox.depth / 2);
+    let point2 = new THREE.Vector3(checkBox.position.x - checkBox.width / 2, 
+                                   checkBox.position.y - checkBox.height / 2, 
+                                   checkBox.position.z - checkBox.depth / 2);
+
+    let checkX = (airship.position.x > point2.x && airship.position.x < point1.x);
+    let checkY = (airship.position.y > point2.y && airship.position.y < point1.y);
+    let checkZ = (airship.position.z > point2.z && airship.position.z < point1.z);
+
+    return checkX && checkY && checkZ;
+}
+
+// animation of the islands
+function floating(object, floatingFrequency, amplitude, currentTime) {
+    const scalingFactor = 1 / 1000;
+    var midPosition = object.position.y;
+    object.position.y = midPosition + (Math.sin(currentTime * floatingFrequency) * scalingFactor * amplitude);
+}
+
+// joystick
+function addJoystick() {
+    const options = {
+        zone: document.getElementById('joystickWrapper'),
+        size: 200,
+        multitouch: true,
+        maxNumberOfNipples: 2,
+        mode: 'static',
+        restJoystick: true,
+        shape: 'circle',
+        position: { top: document.height / 2 +'px', left: document.height / 2 + "px" },
+        dynamicPage: true,
+    }
+    joystickManager = nipplejs.create(options);
+
+    joystickManager['0'].on('move', function (event, data) {
+        // top of joystick should be the y=100, bottom should be y=-100, left x=-100, right x=100
+        const forward = data.instance.frontPosition.y;
+        const turn = data.instance.frontPosition.x
+        if (forward > 0) {
+            forwardsValue = Math.abs(forward) / 2000
+            backwardsValue = 0
+        } else if (forward < 0) {
+            forwardsValue = 0
+            backwardsValue = Math.abs(forward) / 2000
+        }
+        if (turn > 0) {
+            leftValue = 0
+            rightValue = Math.abs(turn) / 2000
+        } else if (turn < 0) {
+            leftValue = Math.abs(turn) / 2000
+            rightValue = 0
+        }
+    });
+
+    joystickManager['0'].on('end', function (event) {
+        backwardsValue = 0
+        forwardsValue = 0
+        leftValue = 0
+        rightValue = 0
+    })
+}
+
+// timer
 function startTimer() {   
     if (isTimerRunning) return;
 
@@ -322,7 +324,6 @@ function startTimer() {
 }
 
 function stopTimer() {
-
     isTimerRunning = false;
     checkBoxList.forEach((checkpoint) => {
         checkpoint.passed = false;
@@ -333,8 +334,11 @@ function stopTimer() {
 }
 
 function animate() {
+    // scaling after everything has loaded
     collection.scale.set(0.2, 0.2, 0.2);
     collection.position.set(0, 0, 0);
+
+    const checkpointDistance = 10;
     renderer.setAnimationLoop(function () {
         // time management
         /// scaling to seconds
@@ -347,7 +351,7 @@ function animate() {
         floating(island3, 2.2, 2, time);
 
         moveAirship();
-        nearCheckBox(10);
+        nearCheckBox(checkpointDistance);
 
         // rendering
         renderer.outputEncoding = THREE.sRGBEncoding;
