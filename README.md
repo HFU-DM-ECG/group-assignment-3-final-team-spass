@@ -1,16 +1,6 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/E5ATIiJe)
 # Group assignment 03 - Final AR/VR Application
 
-The task is to continue the development of the first assignment and implement it into an AR or VR application by using the WebXR standard.
-
-## Rating
-
-- Presentation and idea: 30 %
-
-- WebXR (AR/VR) concept: 40 %
-
-- Code quality: 30 %
-
 ## Explanation
 
 ### How to use
